@@ -21,27 +21,67 @@ def redirect_to_register():
     return redirect("/register")
 
 
-@app.get("/register")
-def display_register_form():
-    """Show user register form"""
-    return render_template("register.html")
+
+@app.route("/register", methods=["GET", "POST"])
+def display_and_handle_register_form():
+    """If no form inputs or inputs invalid: show user register form
+        If inputs are valid, create and add new user to db, and redirect to /secret
+    """
+
+    form = RegisterForm()
+
+    if form.validate_on_submit():
+        username = form.username.data
+        email = form.email.data
+        # QUESTION - password = form.password.data  if stored to a variable, is it accessable?
+        first_name = form.first_name.data
+        last_name = form.last_name.data
 
 
-@app.post("/register")
-def save_register_info_to_server():
-    """Take form inputs and saves user to database"""
+        new_user = User.register(username, form.password.data, first_name, last_name, email)
+        # new_user["email"]=email 
+        # new_user["first_name"]=first_name
+        # new_user["last_name"]=last_name
 
+        db.session.add(new_user)
+        db.session.commit()
 
-@app.get("/login")
+        session["username"] = username 
+
+        return redirect("/secret")
+    
+    return render_template("register.html", form=form)
+    
+
+@app.route("/login", methods=["GET", "POST"])
 def show_login_form():
     """Show user login form"""
-
-
-@app.post("/login")
-def process_login():
     """Process login form, saves login user to session"""
+
+    form=LoginForm()
+
+    if form.validate_on_submit():
+        username=form.username.data
+
+        curr_user = User.authenticate(username, form.password.data)
+        
+        if not(curr_user):
+            return render_template("login.html", form=form)
+
+        session["username"] = curr_user.username
+
+        return redirect("/secret")
+
+
+    return render_template("login.html", form=form)
 
 
 @app.get("/secret")
 def display_secret_page():
     """Renders secret.html"""
+
+    
+    if session.get("username"):
+        return render_template("secret.html")
+
+    return render_template("login.html", form=LoginForm())
