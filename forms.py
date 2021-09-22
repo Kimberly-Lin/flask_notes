@@ -36,4 +36,7 @@ class LoginForm(FlaskForm):
 
 
 class LogoutForm(FlaskForm):
-    """Form for loggin out a user"""
+    """Form for logging out a user"""
+
+class DeleteUserForm(FlaskForm):
+    """Form for deleting a user"""

@@ -11,12 +11,49 @@
     <li>Username: {{user.username}}</li>
     <li>Email: {{user.email}}</li>
 </ul>
+<h2>Notes</h2>
+<ul>
+    {% for note in user.notes %}
+    <li>
+        <a href="/notes/{{note.id}}/update" class="fas fa-sticky-note" style="color:purple"></a>
+        <a href="/notes/{{note.id}}/delete" class="fas fa-trash-alt" style="color:red"></a>
+        <b>{{note.title}}</b>
+        <i>{{note.content}}</i>
+    </li>
+    {% endfor %}
+</ul>
+
+<div>
+    <a href="/users/{{user.username}}/notes/add" class="btn btn-success"> Add Note</a>
+</div>
+<div>
+    <form action="/user/{{user.username}}/delete" id="delete_user_form" method="POST">
+        {{ delete_user_form.hidden_tag() }}
+        <!--add type=hidden form fields -->
+    
+        {% for field in delete_user_form
+        if field.widget.input_type != 'hidden' %}
+    
+        <p>
+            {{ field.label }}
+            {{ field }}
+    
+            {% for error in field.errors %}
+            {{ error }}
+            {% endfor %}
+        </p>
+    
+        {% endfor %}
+    
+        <button type="submit" class="btn btn-danger">Delete</button>
+    </form>
+</div>
 
 <form action="/logout" id="logout_form" method="POST">
-    {{ form.hidden_tag() }}
+    {{ logout_form.hidden_tag() }}
     <!--add type=hidden form fields -->
 
-    {% for field in form
+    {% for field in logout_form
     if field.widget.input_type != 'hidden' %}
 
     <p>
@@ -32,5 +69,6 @@
 
     <button type="submit" class="btn btn-primary">Logout</button>
 </form>
+
 
 {% endblock %}

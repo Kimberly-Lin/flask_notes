@@ -1,7 +1,7 @@
 from flask import Flask, render_template, redirect, session, flash
 from flask_debugtoolbar import DebugToolbarExtension
 from models import connect_db, db, User
-from forms import RegisterForm, LoginForm, LogoutForm
+from forms import RegisterForm, LoginForm, LogoutForm, DeleteUserForm
 from sqlalchemy import exc
 
 app = Flask(__name__)
@@ -55,19 +55,18 @@ def display_and_handle_register_form():
 
 
 @app.route("/login", methods=["GET", "POST"])
-def process_login_form():
-    # TODO:change view function name and update docstring
+def view_or_process_login_form():
     """
-    Process login form, saves login user to session
+    Show or process login form, saves login user to session if valid.
     """
 
     form = LoginForm()
 
     if form.validate_on_submit():
         username = form.username.data
-
+        breakpoint()
         curr_user = User.authenticate(username, form.password.data)
-
+        
         if not(curr_user):
             return render_template("login.html", form=form)
 
@@ -96,15 +95,32 @@ def display_user_details(username):
         return redirect(f"/user/{saved_username}")
 
     user = User.query.get_or_404(username)
-    return render_template("user_details.html", user=user, form=LogoutForm())
+    return render_template("user_details.html", 
+        user=user, 
+        logout_form=LogoutForm(), 
+        delete_user_form=DeleteUserForm())
 
 
 @app.post("/logout")
 def user_logout():
     """Logs out current user and clears session info"""
-    # Make instance of form, use validate on submit so that we have CSRF protection
-    if not session.get("username"):
-        return redirect("/login")
 
-    session.pop("username", None)
-    return redirect("/")
+    logout_form=LogoutForm()
+    if logout_form.validate_on_submit():
+
+        if not session.get("username"):
+            return redirect("/login")
+
+        session.pop("username", None)
+        return redirect("/")
+    
+    username = session.get("username")
+    user = User.query.get_or_404(username)
+
+    return render_template("user_details.html", 
+        user=user, 
+        logout_form=logout_form, 
+        delete_user_form=DeleteUserForm())
+
+
+

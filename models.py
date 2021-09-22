@@ -1,5 +1,7 @@
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import backref
+from sqlalchemy.sql.schema import ForeignKey
 
 db = SQLAlchemy()
 
@@ -38,6 +40,8 @@ class User(db.Model):
         db.String(30),
         nullable=False)
 
+    
+
     # start_register
     @classmethod
     def register(cls, username, pwd, first_name, last_name, email):
@@ -67,3 +71,30 @@ class User(db.Model):
         else:
             return False
     # end_authenticate
+
+
+class Note(db.Model):
+    """Model for Note"""
+
+    __tablename__ = "notes"
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+        autoincrement=True)
+
+    title = db.Column(
+        db.String(100),
+        nullable=False)
+
+    content = db.Column(
+        db.Text,
+        nullable=False)
+
+    owner = db.Column(
+        db.ForeignKey('users.username'),
+        nullable=False)
+        
+    user = db.relationship("User", backref=("notes"))
+    
+
